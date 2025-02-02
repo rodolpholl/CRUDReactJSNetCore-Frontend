@@ -1,0 +1,357 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Layout principal */
+.g-sidenav-show {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f9fa;
+}
+
+.main-content-no-sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Navbar ajustes */
+.navbar-main {
+  margin: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  background-color: #fff;
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+  height: 60px;
+  padding: 0 1rem;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+}
+
+.navbar-title {
+  color: #344767;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.navbar-search {
+  display: flex;
+  align-items: center;
+}
+
+/* Container principal */
+.container-fluid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  max-width: 100%;
+}
+
+/* Card ajustes */
+.card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+  margin-bottom: 0;
+}
+
+.card-body {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* DataTable ajustes */
+.rdt_Table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.rdt_TableBody {
+  flex: 1;
+}
+
+/* Ajustes para o card */
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
+}
+
+/* Ajustes para o menu lateral */
+.navbar-vertical .navbar-nav {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.navbar-vertical .navbar-nav .nav-link {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  color: #344767;
+  border-radius: 0.5rem;
+  margin: 0.15rem 1rem;
+  transition: all 0.15s ease-in;
+}
+
+.navbar-vertical .navbar-nav .nav-link.active {
+  background-color: #f8f9fa;
+  color: #344767;
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+}
+
+.icon-shape {
+  width: 32px;
+  height: 32px;
+  background-position: center;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Input de pesquisa */
+.input-group-outline {
+  height: 31px;
+}
+
+.input-group-outline .form-control {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 1199.98px) {
+  .sidenav {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .sidenav.show {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.bg-gray-100 {
+  background-color: #f8f9fa;
+}
+
+/* Ajustes para tabela */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  vertical-align: top;
+  border-top: 1px solid #e9ecef;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #e9ecef;
+  font-weight: 600;
+  color: #344767;
+}
+
+/* Ajustes para scroll infinito */
+.table-responsive {
+  position: relative;
+  min-height: 200px;
+}
+
+.spinner-border {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Ajustes para botões na tabela */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
+.table td .btn {
+  margin-right: 0.25rem;
+}
+
+.table td .btn:last-child {
+  margin-right: 0;
+}
+
+/* Ajustes para MDB DataTable */
+.datatable {
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+}
+
+.datatable-table {
+  margin-bottom: 0;
+}
+
+.datatable-pagination {
+  border-top: 1px solid #e9ecef;
+  padding: 1rem;
+}
+
+.datatable-select {
+  background-color: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  padding: 0.375rem 1.75rem 0.375rem 0.75rem;
+}
+
+.datatable-input {
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Ajustes para linha selecionada na tabela */
+.datatable-row-selected,
+.datatable tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075) !important;
+  cursor: pointer;
+}
+
+/* Ajuste para formatação de data */
+.datatable td {
+  white-space: nowrap;
+}
+
+/* Ajuste para ações na tabela */
+.datatable td:last-child {
+  white-space: nowrap;
+  width: 1%;
+}
+
+/* Ajustes para DataTable */
+.rdt_TableHeader {
+  display: none;
+}
+
+.rdt_TableHeadRow {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.rdt_TableRow {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.rdt_Pagination {
+  border-radius: 0 0 0.75rem 0.75rem;
+  padding: 0.75rem;
+}
+
+/* Ajustes para botões na tabela */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
+.btn + .btn {
+  margin-left: 0.5rem;
+}
+
+/* Ajustes para ícones nas ações */
+.actions-buttons {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions-buttons .btn-link {
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.actions-buttons .btn-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.actions-buttons .material-icons {
+  font-size: 20px;
+}
+
+.actions-buttons .btn-link.text-primary:hover {
+  color: #0056b3 !important;
+}
+
+.actions-buttons .btn-link.text-danger:hover {
+  color: #dc3545 !important;
+}
+
+.btn-primary {
+  background-color: #5e72e4;
+  border-color: #5e72e4;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #324cdd;
+  border-color: #324cdd;
+  box-shadow: 0 5px 15px rgba(94, 114, 228, 0.3);
+}
+
+.btn-primary .material-icons {
+  font-size: 20px;
+}
+
+/* Ajuste para alinhamento do ícone com o texto */
+.btn .material-icons {
+  display: inline-flex;
+  align-items: center;
+}
