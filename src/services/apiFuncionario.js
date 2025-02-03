@@ -89,6 +89,16 @@ export const funcionarioService = {
       throw error;
     }
   },
+
+  resetarSenha: async (id) => {
+    try {
+      const response = await api.post(`/${id}/reset-senha`);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao resetar senha:", error);
+      throw error;
+    }
+  },
 };
 
 export const cargoService = {

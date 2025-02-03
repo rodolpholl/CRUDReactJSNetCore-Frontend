@@ -3,6 +3,7 @@ import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
 import { funcionarioService } from "../services/apiFuncionario";
 import { toast } from "react-toastify";
+import { authService } from "../services/apiAuth";
 
 function TabelaFuncionarios({ searchTerm, addDesativados }) {
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,10 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
   const [selectedFuncionario, setSelectedFuncionario] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [operacaoConfirmada, setOperacaoConfirmada] = useState(null);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const columns = [
     {
@@ -52,14 +57,14 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
     },
     {
       name: "Cargo",
-      selector: (row) => row.cargo?.name || row.cargoName,
+      selector: (row) => row.cargo,
       sortable: true,
       grow: 1,
       wrap: true,
     },
     {
       name: "Gestor",
-      selector: (row) => row.gestor?.nome || row.gestorName,
+      selector: (row) => row.gestor,
       sortable: true,
       grow: 2,
       wrap: true,
@@ -74,7 +79,7 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
     {
       name: "Ações",
       cell: (row) => (
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-1">
           <button
             className={`btn btn-sm ${
               row.active ? "btn-outline-primary" : "btn-outline-info"
@@ -92,6 +97,17 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
               {row.active ? "edit" : "visibility"}
             </i>
           </button>
+
+          {row.active && (
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => handleResetPassword(row)}
+              title="Resetar Senha do Usuário"
+            >
+              <i className="material-icons">lock_open</i>
+            </button>
+          )}
+
           <button
             className={`btn btn-sm ${
               row.active ? "btn-outline-danger" : "btn-outline-secondary"
@@ -104,7 +120,7 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
           </button>
         </div>
       ),
-      width: "120px",
+      width: "150px",
       allowOverflow: true,
       noWrap: true,
     },
@@ -210,6 +226,52 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
       toast.error("Erro ao excluir funcionário. Por favor, tente novamente.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetPassword = (funcionario) => {
+    setSelectedFuncionario(funcionario);
+    setShowResetModal(true);
+  };
+
+  const confirmResetPassword = async () => {
+    try {
+      setLoading(true);
+      const newPassword = await authService.resetarSenha(
+        selectedFuncionario.id
+      );
+      toast.success("Senha resetada com sucesso!");
+      setShowResetModal(false);
+      setNewPassword(newPassword);
+      setShowNewPasswordModal(true);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "Erro ao resetar senha. Tente novamente."
+      );
+    } finally {
+      setLoading(false);
+      setSelectedFuncionario(null);
+    }
+  };
+
+  const handleCloseNewPasswordModal = () => {
+    setShowNewPasswordModal(false);
+    setNewPassword(null);
+  };
+
+  const handleCopyPassword = async () => {
+    try {
+      await navigator.clipboard.writeText(newPassword);
+      setCopied(true);
+      toast.success("Senha copiada!");
+
+      // Reset do estado de copiado após 2 segundos
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (err) {
+      toast.error("Erro ao copiar senha");
     }
   };
 
@@ -379,6 +441,106 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
           </div>
         </div>
       )}
+
+      {/* Modal de Reset de Senha */}
+      <div
+        className={`modal fade ${showResetModal ? "show d-block" : ""}`}
+        tabIndex="-1"
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Confirmar Reset de Senha</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowResetModal(false)}
+              ></button>
+            </div>
+            <div className="modal-body">
+              <p>
+                Essa operação irá resetar a senha do funcionário{" "}
+                <strong>{selectedFuncionario?.nome}</strong>. Deseja realmente
+                prosseguir?
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowResetModal(false)}
+              >
+                Não
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={confirmResetPassword}
+              >
+                Sim
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal exibindo a nova senha */}
+      <div
+        className={`modal fade ${showNewPasswordModal ? "show d-block" : ""}`}
+        tabIndex="-1"
+        style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Nova Senha Gerada</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={handleCloseNewPasswordModal}
+              ></button>
+            </div>
+            <div className="modal-body">
+              <p>
+                A senha de usuário do funcionário{" "}
+                <strong>{selectedFuncionario?.nome}</strong> foi resetada. A
+                nova senha é:
+              </p>
+              <div className="alert alert-info text-center position-relative">
+                <div className="d-flex align-items-center justify-content-center gap-2">
+                  <strong>{newPassword}</strong>
+                  <button
+                    className={`btn btn-sm btn-link text-${
+                      copied ? "success" : "primary"
+                    } p-0 ms-2`}
+                    onClick={handleCopyPassword}
+                    title="Copiar senha"
+                  >
+                    <i className="material-icons" style={{ fontSize: "20px" }}>
+                      {copied ? "check" : "content_copy"}
+                    </i>
+                  </button>
+                </div>
+              </div>
+              <p className="text-muted small mt-3">
+                Em condições normais, essa senha seria enviada por email ou
+                algum outro instrumento de push. Para fins de teste, vamos
+                exibí-la para uso e validação.
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleCloseNewPasswordModal}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

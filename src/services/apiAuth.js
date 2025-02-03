@@ -42,6 +42,16 @@ export const authService = {
       throw error;
     }
   },
+
+  resetarSenha: async (id) => {
+    try {
+      const response = await api.patch(`/reset-password/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao resetar senha:", error);
+      throw error;
+    }
+  },
 };
 
 export default api;
