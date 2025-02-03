@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import ListarFuncionarios from "./pages/ListarFuncionarios";
 import EditarFuncionario from "./pages/EditarFuncionario";
 import AlterarSenha from "./pages/AlterarSenha";
+import PrivateRoute from "./components/PrivateRoute";
 import { setupApi } from "./services/api";
 
 function AppRoutes() {
@@ -30,9 +31,33 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
 
       {/* Rotas protegidas */}
-      <Route path="/funcionarios" element={<ListarFuncionarios />} />
-      <Route path="/funcionarios/editar/:id" element={<EditarFuncionario />} />
-      <Route path="/alterar-senha" element={<AlterarSenha />} />
+      <Route
+        path="/funcionarios"
+        element={
+          <PrivateRoute>
+            <ListarFuncionarios />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/funcionarios/editar/:id"
+        element={
+          <PrivateRoute>
+            <EditarFuncionario />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/alterar-senha"
+        element={
+          <PrivateRoute>
+            <AlterarSenha />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Rota para qualquer outro caminho não definido */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

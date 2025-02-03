@@ -1,6 +1,20 @@
 import { toast } from "react-toastify";
 
 export const setupInterceptors = (api, navigate) => {
+  // Interceptor de requisição
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
   // Interceptor de resposta
   api.interceptors.response.use(
     (response) => {
@@ -11,7 +25,9 @@ export const setupInterceptors = (api, navigate) => {
       if (error.response) {
         switch (error.response.status) {
           case 401:
-            // Não autorizado - redirecionar para login
+            // Não autorizado - limpar dados e redirecionar para login
+            localStorage.removeItem("token");
+            localStorage.removeItem("usuarioLogado");
             toast.error("Sessão expirada. Por favor, faça login novamente.");
             navigate("/login");
             break;

@@ -10,7 +10,7 @@ function Navbar() {
   );
 
   const handleLogout = () => {
-    authService.logout();
+    authService.logout(); // Remove token e usuarioLogado
     navigate("/login");
   };
 

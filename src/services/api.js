@@ -11,6 +11,21 @@ const createApi = (
     },
   });
 
+  // Interceptor de requisição para adicionar o token
+  api.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem("token");
+      // Não adiciona o token na rota de login
+      if (token && !config.url.includes("/login")) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
   return api;
 };
 
