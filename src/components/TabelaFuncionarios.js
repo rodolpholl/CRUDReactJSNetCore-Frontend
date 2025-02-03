@@ -27,26 +27,49 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
           {row.active ? "Ativo" : "Inativo"}
         </span>
       ),
+      noWrap: true,
     },
     {
       name: "Nome",
       selector: (row) => row.nome,
       sortable: true,
+      grow: 3,
+      wrap: true,
     },
     {
-      name: "E-mail",
+      name: "Email",
       selector: (row) => row.email,
       sortable: true,
+      grow: 2,
+      wrap: true,
+    },
+    {
+      name: "Telefone(s)",
+      selector: (row) => row.telefone,
+      sortable: true,
+      grow: 1,
+      wrap: true,
     },
     {
       name: "Cargo",
       selector: (row) => row.cargo?.name || row.cargoName,
       sortable: true,
+      grow: 1,
+      wrap: true,
     },
     {
       name: "Gestor",
       selector: (row) => row.gestor?.nome || row.gestorName,
       sortable: true,
+      grow: 2,
+      wrap: true,
+    },
+    {
+      name: "Documento",
+      selector: (row) => row.documento,
+      sortable: true,
+      grow: 1,
+      wrap: true,
     },
     {
       name: "Ações",
@@ -81,6 +104,9 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
           </button>
         </div>
       ),
+      width: "120px",
+      allowOverflow: true,
+      noWrap: true,
     },
   ];
 
@@ -188,15 +214,22 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
   };
 
   const customStyles = {
+    table: {
+      style: {
+        minWidth: "100%",
+      },
+    },
     rows: {
       style: {
         minHeight: "60px",
+        fontSize: "14px",
       },
     },
     headCells: {
       style: {
         paddingLeft: "8px",
         paddingRight: "8px",
+        fontSize: "14px",
         fontWeight: "bold",
       },
     },
@@ -204,6 +237,7 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
       style: {
         paddingLeft: "8px",
         paddingRight: "8px",
+        wordBreak: "break-word",
       },
     },
   };
@@ -222,13 +256,6 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
         columns={columns}
         data={data}
         progressPending={loading}
-        progressComponent={
-          <div className="text-center py-3">
-            <div className="spinner-border text-primary" role="status">
-              <span className="visually-hidden">Carregando...</span>
-            </div>
-          </div>
-        }
         pagination
         paginationServer
         paginationTotalRows={totalRows}
@@ -238,9 +265,10 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
         paginationDefaultPage={pageIndex}
         paginationRowsPerPageOptions={pageSize}
         noDataComponent={loading ? null : "Nenhum registro encontrado"}
-        highlightOnHover
-        pointerOnHover
         customStyles={customStyles}
+        responsive
+        fixedHeader
+        fixedHeaderScrollHeight="calc(100vh - 300px)"
       />
 
       {showModal && (

@@ -41,7 +41,8 @@ export const funcionarioService = {
       }
 
       const response = await api.get(url);
-      return response.data;
+      let result = response.data.filter((item) => item.id > 1);
+      return result;
     } catch (error) {
       console.error("Erro ao buscar funcionários:", error);
       throw error;

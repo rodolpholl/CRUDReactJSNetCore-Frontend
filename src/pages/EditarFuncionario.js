@@ -74,15 +74,16 @@ function EditarFuncionario() {
       setCarregandoGestores(true);
       const cargoSelecionado = cargos.find((c) => c.id === Number(cargoId));
       if (cargoSelecionado) {
-        // Se for Diretor (level 1), adiciona apenas o Sys Admin
         if (cargoSelecionado.level === 1) {
-          setGestores([{ gestorId: "1", nome: "Sys Admin" }]);
+          // Se for Diretor (level 1), define apenas o Sys Admin
           setValue("gestorId", "1");
+          setGestores([{ gestorId: "1", nome: "Sys Admin" }]);
         } else {
+          // Para outros cargos, carrega a lista normal de gestores
           const response = await gestorService.getGestores(
             cargoSelecionado.level
           );
-          setGestores(response);
+          setGestores(response.filter((gestor) => gestor.nome !== "Sys Admin"));
         }
         setErroGestores(null);
       }
@@ -130,10 +131,6 @@ function EditarFuncionario() {
           setValue("dataNascimento", dataNascimento);
           setValue("documento", funcionarioData.documento || "");
           setTelefones(funcionarioData.telefone || [""]);
-          // Se já tem telefone, atualiza o campo hidden
-          if (funcionarioData.telefone?.length > 0) {
-            setValue("telefones", funcionarioData.telefone);
-          }
 
           // Carregar gestores se tiver cargo
           if (funcionarioData.cargoId && cargos.length > 0) {
@@ -155,10 +152,6 @@ function EditarFuncionario() {
           );
           setValue("documento", funcionario.documento || "");
           setTelefones(funcionario.telefone || [""]);
-          // Se já tem telefone, atualiza o campo hidden
-          if (funcionario.telefone?.length > 0) {
-            setValue("telefones", funcionario.telefone);
-          }
 
           // Carregar gestores se tiver cargo
           if (funcionario.cargoId && cargos.length > 0) {
@@ -203,7 +196,7 @@ function EditarFuncionario() {
           const response = await gestorService.getGestores(
             cargoSelecionado.level
           );
-          setGestores(response.filter((gestor) => gestor.gestorId !== 1));
+          setGestores(response.filter((gestor) => gestor.gestorId > 1));
         }
         setErroGestores(null);
       }
@@ -527,6 +520,16 @@ function EditarFuncionario() {
 
   return (
     <div className="container-fluid pt-5">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="m-0">
+          {id === "novo"
+            ? "Novo Funcionário"
+            : viewOnly
+            ? "Visualizar dados do Funcionário"
+            : "Editar Funcionário"}
+        </h4>
+      </div>
+
       <div className="card">
         <div className="card-body">
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -719,8 +722,13 @@ function EditarFuncionario() {
                             type="button"
                             className="btn btn-outline-danger btn-icon"
                             onClick={() => removerTelefone(index)}
+                            title="Remover Telefone"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
                           >
-                            <i className="material-icons">remove</i>
+                            <i className="material-icons d-flex align-items-center justify-content-center">
+                              remove
+                            </i>
                           </button>
                         )}
                         {index === telefones.length - 1 && (
