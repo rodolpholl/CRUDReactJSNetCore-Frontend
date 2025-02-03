@@ -5,11 +5,12 @@ import {
   cargoService,
   gestorService,
   funcionarioService,
-} from "../services/api";
+} from "../services/apiFuncionario";
 import Notification from "../components/Notification";
 import { toast } from "react-toastify";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import Navbar from "../components/Navbar";
 
 function EditarFuncionario() {
   const navigate = useNavigate();
@@ -130,7 +131,21 @@ function EditarFuncionario() {
           setValue("gestorId", funcionarioData.gestorId?.toString() || "");
           setValue("dataNascimento", dataNascimento);
           setValue("documento", funcionarioData.documento || "");
-          setTelefones(funcionarioData.telefone || [""]);
+
+          // Ajuste no carregamento dos telefones
+          if (
+            funcionarioData.telefone &&
+            Array.isArray(funcionarioData.telefone)
+          ) {
+            setTelefones(funcionarioData.telefone);
+          } else if (
+            funcionarioData.telefones &&
+            Array.isArray(funcionarioData.telefones)
+          ) {
+            setTelefones(funcionarioData.telefones);
+          } else {
+            setTelefones([""]);
+          }
 
           // Carregar gestores se tiver cargo
           if (funcionarioData.cargoId && cargos.length > 0) {
@@ -151,7 +166,18 @@ function EditarFuncionario() {
             funcionario.dataNascimento?.split("T")[0] || ""
           );
           setValue("documento", funcionario.documento || "");
-          setTelefones(funcionario.telefone || [""]);
+
+          // Ajuste no carregamento dos telefones
+          if (funcionario.telefone && Array.isArray(funcionario.telefone)) {
+            setTelefones(funcionario.telefone);
+          } else if (
+            funcionario.telefones &&
+            Array.isArray(funcionario.telefones)
+          ) {
+            setTelefones(funcionario.telefones);
+          } else {
+            setTelefones([""]);
+          }
 
           // Carregar gestores se tiver cargo
           if (funcionario.cargoId && cargos.length > 0) {
@@ -166,10 +192,8 @@ function EditarFuncionario() {
       }
     };
 
-    if (cargos.length > 0) {
-      carregarDados();
-    }
-  }, [id, funcionarioData, setValue, cargos]);
+    carregarDados();
+  }, [id, funcionarioData, cargos.length, setValue]);
 
   // Função para lidar com a mudança de cargo
   const handleCargoChange = async (event) => {
@@ -274,24 +298,10 @@ function EditarFuncionario() {
     // }));
   };
 
-  const handleTelefoneChange = (value, data, index) => {
+  const handleTelefoneChange = (value, country, index) => {
     const novosTelefones = [...telefones];
-    const numeroLimpo = "+" + value.replace(/\D/g, "");
-    novosTelefones[index] = numeroLimpo;
+    novosTelefones[index] = value;
     setTelefones(novosTelefones);
-
-    // Atualiza o campo hidden apenas se houver algum telefone válido
-    const telefonesValidos = novosTelefones.filter((tel) => tel.length > 1);
-    if (telefonesValidos.length > 0) {
-      setValue("telefones", telefonesValidos);
-    } else {
-      setValue("telefones", "");
-    }
-
-    setTouchedFields((prev) => ({
-      ...prev,
-      telefones: true,
-    }));
   };
 
   const adicionarTelefone = () => {
@@ -424,31 +434,34 @@ function EditarFuncionario() {
   };
 
   const onSubmit = async (data) => {
+    // Validação dos telefones
+    if (!telefones.some((tel) => tel && tel.trim())) {
+      toast.error("Pelo menos um telefone é obrigatório");
+      return;
+    }
+
+    // Remove telefones vazios antes de enviar
+    const telefonesValidos = telefones.filter((tel) => tel && tel.trim());
+
     try {
       setSalvando(true);
-      const dados = {
+      const dadosParaEnviar = {
         ...data,
-        cargoId: Number(data.cargoId),
-        gestorId: Number(data.gestorId) || null,
-        telefone: telefones.filter((tel) => tel.length > 1),
+        telefone: telefonesValidos,
       };
 
       if (id === "novo") {
-        await funcionarioService.createFuncionario(dados);
+        await funcionarioService.createFuncionario(dadosParaEnviar);
         toast.success("Funcionário cadastrado com sucesso!");
       } else {
-        await funcionarioService.updateFuncionario(id, dados);
+        await funcionarioService.updateFuncionario(id, dadosParaEnviar);
         toast.success("Funcionário atualizado com sucesso!");
       }
-
-      navigate("/funcionarios", {
-        state: { recarregar: true },
-      });
+      navigate("/funcionarios", { state: { recarregar: true } });
     } catch (error) {
-      console.error("Erro ao salvar funcionário:", error);
       toast.error(
         error.response?.data?.message ||
-          "Erro ao salvar funcionário. Por favor, tente novamente."
+          "Erro ao salvar funcionário. Tente novamente."
       );
     } finally {
       setSalvando(false);
@@ -519,278 +532,280 @@ function EditarFuncionario() {
   }
 
   return (
-    <div className="container-fluid pt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h4 className="m-0">
-          {id === "novo"
-            ? "Novo Funcionário"
-            : viewOnly
-            ? "Visualizar dados do Funcionário"
-            : "Editar Funcionário"}
-        </h4>
-      </div>
+    <>
+      <Navbar />
+      <div className="container-fluid pt-5">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h4 className="m-0">
+            {id === "novo"
+              ? "Novo Funcionário"
+              : viewOnly
+              ? "Visualizar dados do Funcionário"
+              : "Editar Funcionário"}
+          </h4>
+        </div>
 
-      <div className="card">
-        <div className="card-body">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label htmlFor="nome" className="form-label">
-                  Nome
-                </label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.nome ? "is-invalid" : ""}`}
-                  id="nome"
-                  disabled={viewOnly}
-                  {...register("nome", { required: "Nome é obrigatório" })}
-                />
-                {errors.nome && (
-                  <div className="invalid-feedback">{errors.nome.message}</div>
-                )}
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <label htmlFor="email" className="form-label">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                  id="email"
-                  disabled={viewOnly}
-                  {...register("email", {
-                    required: "Email é obrigatório",
-                    validate: {
-                      validEmail: (value) =>
-                        isValidEmail(value) || "Email inválido",
-                    },
-                  })}
-                />
-                {errors.email && (
-                  <div className="invalid-feedback">{errors.email.message}</div>
-                )}
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <label htmlFor="cargoId" className="form-label">
-                  Cargo
-                </label>
-                <select
-                  className={`form-select ${
-                    errors.cargoId ? "is-invalid" : ""
-                  }`}
-                  id="cargoId"
-                  disabled={viewOnly}
-                  {...register("cargoId", {
-                    required: "Cargo é obrigatório",
-                    onChange: handleCargoChange,
-                  })}
-                >
-                  <option value="">Selecione um cargo</option>
-                  {cargos.map((cargo) => (
-                    <option key={cargo.id} value={cargo.id}>
-                      {cargo.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.cargoId && (
-                  <div className="invalid-feedback">
-                    {errors.cargoId.message}
-                  </div>
-                )}
-              </div>
-
-              <div className="col-md-6 mb-3">
-                <label htmlFor="gestorId" className="form-label">
-                  Gestor
-                </label>
-                <select
-                  className={`form-select ${
-                    errors.gestorId ? "is-invalid" : ""
-                  }`}
-                  id="gestorId"
-                  disabled={
-                    viewOnly ||
-                    !getValues("cargoId") ||
-                    cargos.find((c) => c.id === Number(getValues("cargoId")))
-                      ?.level === 1
-                  }
-                  {...register("gestorId", {
-                    required: "Gestor é obrigatório",
-                  })}
-                >
-                  {cargos.find((c) => c.id === Number(getValues("cargoId")))
-                    ?.level === 1 ? (
-                    <option value="1">-</option>
-                  ) : (
-                    <>
-                      <option value="">Selecione um gestor</option>
-                      {gestores
-                        .sort((a, b) => a.nome.localeCompare(b.nome))
-                        .map((gestor) => (
-                          <option key={gestor.gestorId} value={gestor.gestorId}>
-                            {gestor.nome}
-                          </option>
-                        ))}
-                    </>
+        <div className="card">
+          <div className="card-body">
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="nome" className="form-label">
+                    Nome
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      errors.nome ? "is-invalid" : ""
+                    }`}
+                    id="nome"
+                    disabled={viewOnly}
+                    {...register("nome", { required: "Nome é obrigatório" })}
+                  />
+                  {errors.nome && (
+                    <div className="invalid-feedback">
+                      {errors.nome.message}
+                    </div>
                   )}
-                </select>
-                {errors.gestorId && (
-                  <div className="invalid-feedback">
-                    {errors.gestorId.message}
-                  </div>
-                )}
-              </div>
+                </div>
 
-              <div className="col-md-6 mb-3">
-                <label htmlFor="dataNascimento" className="form-label">
-                  Data de Nascimento
-                </label>
-                <input
-                  type="date"
-                  className={`form-control ${
-                    errors.dataNascimento ? "is-invalid" : ""
-                  }`}
-                  id="dataNascimento"
-                  disabled={viewOnly}
-                  {...register("dataNascimento", {
-                    required: "Data de Nascimento é obrigatória",
-                    validate: {
-                      validAge: (value) =>
-                        isValidAge(value) ||
-                        "Funcionário deve ter no mínimo 18 anos",
-                    },
-                  })}
-                />
-                {errors.dataNascimento && (
-                  <div className="invalid-feedback">
-                    {errors.dataNascimento.message}
-                  </div>
-                )}
-              </div>
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="email" className="form-label">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    className={`form-control ${
+                      errors.email ? "is-invalid" : ""
+                    }`}
+                    id="email"
+                    disabled={viewOnly}
+                    {...register("email", {
+                      required: "Email é obrigatório",
+                      validate: {
+                        validEmail: (value) =>
+                          isValidEmail(value) || "Email inválido",
+                      },
+                    })}
+                  />
+                  {errors.email && (
+                    <div className="invalid-feedback">
+                      {errors.email.message}
+                    </div>
+                  )}
+                </div>
 
-              <div className="col-md-6 mb-3">
-                <label htmlFor="documento" className="form-label">
-                  Documento
-                </label>
-                <input
-                  type="text"
-                  className={`form-control ${
-                    errors.documento ? "is-invalid" : ""
-                  }`}
-                  id="documento"
-                  disabled={viewOnly}
-                  {...register("documento", {
-                    required: "Documento é obrigatório",
-                  })}
-                />
-                {errors.documento && (
-                  <div className="invalid-feedback">
-                    {errors.documento.message}
-                  </div>
-                )}
-              </div>
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="cargoId" className="form-label">
+                    Cargo
+                  </label>
+                  <select
+                    className={`form-select ${
+                      errors.cargoId ? "is-invalid" : ""
+                    }`}
+                    id="cargoId"
+                    disabled={viewOnly}
+                    {...register("cargoId", {
+                      required: "Cargo é obrigatório",
+                      onChange: handleCargoChange,
+                    })}
+                  >
+                    <option value="">Selecione um cargo</option>
+                    {cargos.map((cargo) => (
+                      <option key={cargo.id} value={cargo.id}>
+                        {cargo.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.cargoId && (
+                    <div className="invalid-feedback">
+                      {errors.cargoId.message}
+                    </div>
+                  )}
+                </div>
 
-              <div className="col-md-6 mb-3">
-                <label htmlFor="telefones" className="form-label">
-                  Telefones
-                </label>
-                <input
-                  type="hidden"
-                  {...register("telefones", {
-                    required: "Pelo menos um telefone é obrigatório",
-                  })}
-                />
-                {telefones.map((telefone, index) => (
-                  <div key={index} className="d-flex gap-2 mb-2">
-                    <PhoneInput
-                      country={"br"}
-                      value={telefone}
-                      onChange={(value) =>
-                        handleTelefoneChange(value, null, index)
-                      }
-                      disabled={viewOnly}
-                      inputClass={`form-control ${
-                        errors.telefones ? "is-invalid" : ""
-                      }`}
-                    />
-                    {!viewOnly && (
-                      <div className="d-flex gap-1">
-                        {telefones.length > 1 && (
-                          <button
-                            type="button"
-                            className="btn btn-outline-danger btn-icon"
-                            onClick={() => removerTelefone(index)}
-                            title="Remover Telefone"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                          >
-                            <i className="material-icons d-flex align-items-center justify-content-center">
-                              remove
-                            </i>
-                          </button>
-                        )}
-                        {index === telefones.length - 1 && (
-                          <button
-                            type="button"
-                            className="btn btn-outline-secondary btn-icon"
-                            onClick={adicionarTelefone}
-                            title="Adicionar Telefone"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                          >
-                            <i className="material-icons d-flex align-items-center justify-content-center">
-                              add
-                            </i>
-                          </button>
-                        )}
-                      </div>
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="gestorId" className="form-label">
+                    Gestor
+                  </label>
+                  <select
+                    className={`form-select ${
+                      errors.gestorId ? "is-invalid" : ""
+                    }`}
+                    id="gestorId"
+                    disabled={
+                      viewOnly ||
+                      !getValues("cargoId") ||
+                      cargos.find((c) => c.id === Number(getValues("cargoId")))
+                        ?.level === 1
+                    }
+                    {...register("gestorId", {
+                      required: "Gestor é obrigatório",
+                    })}
+                  >
+                    {cargos.find((c) => c.id === Number(getValues("cargoId")))
+                      ?.level === 1 ? (
+                      <option value="1">-</option>
+                    ) : (
+                      <>
+                        <option value="">Selecione um gestor</option>
+                        {gestores
+                          .sort((a, b) => a.nome.localeCompare(b.nome))
+                          .map((gestor) => (
+                            <option
+                              key={gestor.gestorId}
+                              value={gestor.gestorId}
+                            >
+                              {gestor.nome}
+                            </option>
+                          ))}
+                      </>
                     )}
-                  </div>
-                ))}
-                {errors.telefones && (
-                  <div className="invalid-feedback d-block">
-                    {errors.telefones.message}
-                  </div>
-                )}
-              </div>
-            </div>
+                  </select>
+                  {errors.gestorId && (
+                    <div className="invalid-feedback">
+                      {errors.gestorId.message}
+                    </div>
+                  )}
+                </div>
 
-            {!viewOnly && (
-              <div className="d-flex justify-content-end gap-2">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => navigate("/funcionarios")}
-                >
-                  CANCELAR
-                </button>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={viewOnly}
-                >
-                  SALVAR
-                </button>
-              </div>
-            )}
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="dataNascimento" className="form-label">
+                    Data de Nascimento
+                  </label>
+                  <input
+                    type="date"
+                    className={`form-control ${
+                      errors.dataNascimento ? "is-invalid" : ""
+                    }`}
+                    id="dataNascimento"
+                    disabled={viewOnly}
+                    {...register("dataNascimento", {
+                      required: "Data de Nascimento é obrigatória",
+                      validate: {
+                        validAge: (value) =>
+                          isValidAge(value) ||
+                          "Funcionário deve ter no mínimo 18 anos",
+                      },
+                    })}
+                  />
+                  {errors.dataNascimento && (
+                    <div className="invalid-feedback">
+                      {errors.dataNascimento.message}
+                    </div>
+                  )}
+                </div>
 
-            {viewOnly && (
-              <div className="d-flex justify-content-end">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => navigate("/funcionarios")}
-                >
-                  VOLTAR
-                </button>
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="documento" className="form-label">
+                    Documento
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      errors.documento ? "is-invalid" : ""
+                    }`}
+                    id="documento"
+                    disabled={viewOnly}
+                    {...register("documento", {
+                      required: "Documento é obrigatório",
+                    })}
+                  />
+                  {errors.documento && (
+                    <div className="invalid-feedback">
+                      {errors.documento.message}
+                    </div>
+                  )}
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="telefones" className="form-label">
+                    Telefones
+                  </label>
+                  {telefones.map((telefone, index) => (
+                    <div key={index} className="d-flex gap-2 mb-2">
+                      <PhoneInput
+                        country={"br"}
+                        value={telefone}
+                        onChange={(value) =>
+                          handleTelefoneChange(value, null, index)
+                        }
+                        disabled={viewOnly}
+                        inputClass={`form-control ${
+                          !telefones.some((tel) => tel && tel.trim())
+                            ? "is-invalid"
+                            : ""
+                        }`}
+                      />
+                      {!viewOnly && (
+                        <div className="d-flex gap-1">
+                          {telefones.length > 1 && (
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger btn-icon"
+                              onClick={() => removerTelefone(index)}
+                              title="Remover Telefone"
+                            >
+                              <i className="material-icons">remove</i>
+                            </button>
+                          )}
+                          {index === telefones.length - 1 && (
+                            <button
+                              type="button"
+                              className="btn btn-outline-secondary btn-icon"
+                              onClick={adicionarTelefone}
+                              title="Adicionar Telefone"
+                            >
+                              <i className="material-icons">add</i>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {!telefones.some((tel) => tel && tel.trim()) && (
+                    <div className="invalid-feedback d-block">
+                      Pelo menos um telefone é obrigatório
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
-          </form>
+
+              {!viewOnly && (
+                <div className="d-flex justify-content-end gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => navigate("/funcionarios")}
+                  >
+                    CANCELAR
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={viewOnly}
+                  >
+                    SALVAR
+                  </button>
+                </div>
+              )}
+
+              {viewOnly && (
+                <div className="d-flex justify-content-end">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => navigate("/funcionarios")}
+                  >
+                    VOLTAR
+                  </button>
+                </div>
+              )}
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

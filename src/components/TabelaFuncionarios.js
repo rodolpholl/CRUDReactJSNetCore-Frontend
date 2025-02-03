@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { useNavigate } from "react-router-dom";
-import { funcionarioService } from "../services/api";
+import { funcionarioService } from "../services/apiFuncionario";
 import { toast } from "react-toastify";
 
 function TabelaFuncionarios({ searchTerm, addDesativados }) {

@@ -16,6 +16,7 @@
     "react-data-table-component": "^7.6.2",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
+    "react-password-strength-bar": "^0.4.1",
     "react-phone-input-2": "^2.15.1",
     "react-router-dom": "^7.1.5",
     "react-scripts": "5.0.1",

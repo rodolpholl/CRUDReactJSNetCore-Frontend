@@ -3,6 +3,7 @@ import TabelaFuncionarios from "../components/TabelaFuncionarios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import debounce from "lodash/debounce";
+import Navbar from "../components/Navbar";
 
 function ListarFuncionarios() {
   const navigate = useNavigate();
@@ -72,6 +73,7 @@ function ListarFuncionarios() {
 
   return (
     <>
+      <Navbar />
       <div className="container-fluid pt-5">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h4 className="m-0">Cadastro de Funcionários</h4>

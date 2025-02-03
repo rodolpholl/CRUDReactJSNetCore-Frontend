@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { authService } from "../services/apiAuth";
 
 function Login() {
   const navigate = useNavigate();
@@ -13,13 +14,13 @@ function Login() {
 
   const onSubmit = async (data) => {
     try {
-      // Aqui você implementaria a chamada real de autenticação
-      console.log("Login com:", data);
-      // Simular login bem-sucedido
+      await authService.login(data.email, data.password);
       navigate("/funcionarios");
-      toast.success("Login realizado com sucesso!");
     } catch (error) {
-      toast.error("Erro ao realizar login. Verifique suas credenciais.");
+      toast.error(
+        error.response?.data?.message ||
+          "Erro ao realizar login. Verifique suas credenciais."
+      );
     }
   };
 
