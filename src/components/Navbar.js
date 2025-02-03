@@ -17,7 +17,19 @@ function Navbar() {
   return (
     <nav className="navbar navbar-main">
       <div className="container-fluid">
-        <div className="navbar-content">
+        <div className="navbar-content d-flex justify-content-between align-items-center w-100">
+          {/* Logo CS CRM */}
+          <div
+            className="navbar-brand d-flex align-items-center m-0"
+            onClick={() => navigate("/funcionarios")}
+            style={{ cursor: "pointer" }}
+          >
+            <span className="logo-text">
+              <span className="text-primary">CS</span> CRM
+            </span>
+          </div>
+
+          {/* Menu do Usuário */}
           <div className="user-menu-container">
             <div
               className="user-profile"
