@@ -64,7 +64,12 @@ function TabelaFuncionarios({ searchTerm, addDesativados }) {
     },
     {
       name: "Gestor",
-      selector: (row) => row.gestor,
+      selector: (row) => {
+        if (row.gestor === "Sys Admin") {
+          return "-";
+        }
+        return row.gestor || "-";
+      },
       sortable: true,
       grow: 2,
       wrap: true,

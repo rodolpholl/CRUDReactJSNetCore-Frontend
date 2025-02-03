@@ -27,7 +27,8 @@ function EditarFuncionario() {
     getValues,
   } = useForm({
     defaultValues: {
-      nome: "",
+      primeiroNome: "",
+      sobrenome: "",
       email: "",
       cargoId: "",
       gestorId: "",
@@ -49,7 +50,8 @@ function EditarFuncionario() {
   const [salvando, setSalvando] = useState(false);
 
   const [touchedFields, setTouchedFields] = useState({
-    nome: false,
+    primeiroNome: false,
+    sobrenome: false,
     email: false,
     cargoId: false,
     dataNascimento: false,
@@ -59,7 +61,8 @@ function EditarFuncionario() {
   });
 
   // Referências para os campos
-  const nomeRef = React.useRef(null);
+  const primeiroNomeRef = React.useRef(null);
+  const sobrenomeRef = React.useRef(null);
   const emailRef = React.useRef(null);
   const cargoRef = React.useRef(null);
   const dataNascimentoRef = React.useRef(null);
@@ -120,16 +123,24 @@ function EditarFuncionario() {
     const carregarDados = async () => {
       if (id === "novo") {
         if (funcionarioData) {
-          // Formatando a data se existir
-          const dataNascimento = funcionarioData.dataNascimento
-            ? funcionarioData.dataNascimento.split("T")[0]
-            : "";
-
-          setValue("nome", funcionarioData.nome || "");
-          setValue("email", funcionarioData.email || "");
+          // Primeiro setamos o cargo
           setValue("cargoId", funcionarioData.cargoId?.toString() || "");
-          setValue("gestorId", funcionarioData.gestorId?.toString() || "");
-          setValue("dataNascimento", dataNascimento);
+
+          // Carregamos os gestores baseado no cargo
+          if (funcionarioData.cargoId && cargos.length > 0) {
+            await carregarGestores(funcionarioData.cargoId);
+            // Só depois setamos o gestor
+            setValue("gestorId", funcionarioData.gestorId?.toString() || "");
+          }
+
+          // Setamos os outros campos
+          setValue("primeiroNome", funcionarioData.primeiroNome || "");
+          setValue("sobrenome", funcionarioData.sobrenome || "");
+          setValue("email", funcionarioData.email || "");
+          setValue(
+            "dataNascimento",
+            funcionarioData.dataNascimento?.split("T")[0] || ""
+          );
           setValue("documento", funcionarioData.documento || "");
 
           // Ajuste no carregamento dos telefones
@@ -146,21 +157,26 @@ function EditarFuncionario() {
           } else {
             setTelefones([""]);
           }
-
-          // Carregar gestores se tiver cargo
-          if (funcionarioData.cargoId && cargos.length > 0) {
-            await carregarGestores(funcionarioData.cargoId);
-          }
         }
       } else {
         try {
           setCarregando(true);
           const funcionario = await funcionarioService.getFuncionarioById(id);
 
-          setValue("nome", funcionario.nome || "");
-          setValue("email", funcionario.email || "");
+          // Primeiro setamos o cargo
           setValue("cargoId", funcionario.cargoId?.toString() || "");
-          setValue("gestorId", funcionario.gestorId?.toString() || "");
+
+          // Carregamos os gestores baseado no cargo
+          if (funcionario.cargoId && cargos.length > 0) {
+            await carregarGestores(funcionario.cargoId);
+            // Só depois setamos o gestor
+            setValue("gestorId", funcionario.gestorId?.toString() || "");
+          }
+
+          // Setamos os outros campos
+          setValue("primeiroNome", funcionario.primeiroNome || "");
+          setValue("sobrenome", funcionario.sobrenome || "");
+          setValue("email", funcionario.email || "");
           setValue(
             "dataNascimento",
             funcionario.dataNascimento?.split("T")[0] || ""
@@ -178,11 +194,6 @@ function EditarFuncionario() {
           } else {
             setTelefones([""]);
           }
-
-          // Carregar gestores se tiver cargo
-          if (funcionario.cargoId && cargos.length > 0) {
-            await carregarGestores(funcionario.cargoId);
-          }
         } catch (error) {
           setErro("Erro ao carregar dados do funcionário");
           console.error(error);
@@ -192,7 +203,9 @@ function EditarFuncionario() {
       }
     };
 
-    carregarDados();
+    if (cargos.length > 0) {
+      carregarDados();
+    }
   }, [id, funcionarioData, cargos.length, setValue]);
 
   // Função para lidar com a mudança de cargo
@@ -246,11 +259,20 @@ function EditarFuncionario() {
     const fieldErrors = {};
 
     switch (name) {
-      case "nome":
+      case "primeiroNome":
         if (!value) {
-          fieldErrors.nome = "Nome é obrigatório";
+          fieldErrors.primeiroNome = "Primeiro Nome é obrigatório";
         } else if (value.length < 3) {
-          fieldErrors.nome = "Nome deve ter no mínimo 3 caracteres";
+          fieldErrors.primeiroNome =
+            "Primeiro Nome deve ter no mínimo 3 caracteres";
+        }
+        break;
+
+      case "sobrenome":
+        if (!value) {
+          fieldErrors.sobrenome = "Sobrenome é obrigatório";
+        } else if (value.length < 3) {
+          fieldErrors.sobrenome = "Sobrenome deve ter no mínimo 3 caracteres";
         }
         break;
 
@@ -340,11 +362,18 @@ function EditarFuncionario() {
     const values = getValues();
     const newErrors = {};
 
-    // Validar Nome
-    if (!values.nome) {
-      newErrors.nome = "Nome é obrigatório";
-    } else if (values.nome.length < 3) {
-      newErrors.nome = "Nome deve ter no mínimo 3 caracteres";
+    // Validar Primeiro Nome
+    if (!values.primeiroNome) {
+      newErrors.primeiroNome = "Primeiro Nome é obrigatório";
+    } else if (values.primeiroNome.length < 3) {
+      newErrors.primeiroNome = "Primeiro Nome deve ter no mínimo 3 caracteres";
+    }
+
+    // Validar Sobrenome
+    if (!values.sobrenome) {
+      newErrors.sobrenome = "Sobrenome é obrigatório";
+    } else if (values.sobrenome.length < 3) {
+      newErrors.sobrenome = "Sobrenome deve ter no mínimo 3 caracteres";
     }
 
     // Validar Email
@@ -387,8 +416,10 @@ function EditarFuncionario() {
 
   // Função para focar no primeiro campo com erro
   const focusFirstError = (errors) => {
-    if (errors.nome) {
-      nomeRef.current?.focus();
+    if (errors.primeiroNome) {
+      primeiroNomeRef.current?.focus();
+    } else if (errors.sobrenome) {
+      sobrenomeRef.current?.focus();
     } else if (errors.email) {
       emailRef.current?.focus();
     } else if (errors.cargoId) {
@@ -406,7 +437,8 @@ function EditarFuncionario() {
 
   // Definir o initialFormData antes do resetForm
   const initialFormData = {
-    nome: "",
+    primeiroNome: "",
+    sobrenome: "",
     email: "",
     cargoId: "",
     gestorId: "",
@@ -423,7 +455,8 @@ function EditarFuncionario() {
 
     setTelefones([""]);
     setTouchedFields({
-      nome: false,
+      primeiroNome: false,
+      sobrenome: false,
       email: false,
       cargoId: false,
       dataNascimento: false,
@@ -539,9 +572,9 @@ function EditarFuncionario() {
           <h4 className="m-0">
             {id === "novo"
               ? "Novo Funcionário"
-              : viewOnly
-              ? "Visualizar dados do Funcionário"
-              : "Editar Funcionário"}
+              : `Editar Funcionário: ${getValues("primeiroNome")} ${getValues(
+                  "sobrenome"
+                )}`}
           </h4>
         </div>
 
@@ -550,21 +583,45 @@ function EditarFuncionario() {
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="row">
                 <div className="col-md-6 mb-3">
-                  <label htmlFor="nome" className="form-label">
-                    Nome
+                  <label htmlFor="primeiroNome" className="form-label">
+                    Primeiro Nome
                   </label>
                   <input
                     type="text"
                     className={`form-control ${
-                      errors.nome ? "is-invalid" : ""
+                      errors.primeiroNome ? "is-invalid" : ""
                     }`}
-                    id="nome"
+                    id="primeiroNome"
                     disabled={viewOnly}
-                    {...register("nome", { required: "Nome é obrigatório" })}
+                    {...register("primeiroNome", {
+                      required: "Primeiro Nome é obrigatório",
+                    })}
                   />
-                  {errors.nome && (
+                  {errors.primeiroNome && (
                     <div className="invalid-feedback">
-                      {errors.nome.message}
+                      {errors.primeiroNome.message}
+                    </div>
+                  )}
+                </div>
+
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="sobrenome" className="form-label">
+                    Sobrenome
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      errors.sobrenome ? "is-invalid" : ""
+                    }`}
+                    id="sobrenome"
+                    disabled={viewOnly}
+                    {...register("sobrenome", {
+                      required: "Sobrenome é obrigatório",
+                    })}
+                  />
+                  {errors.sobrenome && (
+                    <div className="invalid-feedback">
+                      {errors.sobrenome.message}
                     </div>
                   )}
                 </div>

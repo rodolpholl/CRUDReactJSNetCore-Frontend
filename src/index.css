@@ -613,9 +613,31 @@ code {
   width: 100% !important;
 }
 
+/* Ajustes para botões de telefone */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: unset;
+}
+
+.btn-icon i.material-icons {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
 /* Container do telefone com botão de remover */
 .d-flex.gap-2.mb-2 {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -623,27 +645,15 @@ code {
   flex: 1;
 }
 
-/* Ajuste do botão de remover */
-.d-flex.gap-2.mb-2 .btn-outline-danger {
+/* Ajuste do botão de remover e adicionar */
+.d-flex.gap-2.mb-2 .btn-outline-danger,
+.d-flex.gap-2.mb-2 .btn-outline-secondary {
   height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Ajustes para os botões de telefone */
-.btn-icon {
-  width: 32px;
-  height: 32px;
+  width: 38px;
   padding: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: unset;
-}
-
-.btn-icon i {
-  font-size: 18px;
 }
 
 /* Ajustes para botões de formulário */
